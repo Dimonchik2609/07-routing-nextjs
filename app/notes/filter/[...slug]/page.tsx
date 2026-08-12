@@ -5,23 +5,19 @@ import {
   dehydrate,
 } from '@tanstack/react-query';
 import NotesClient from './Notes.client';
+import type { TagType } from '@/lib/api';
 
 type PageProps = {
-  params: {
-    slug: string[]; // catch-all параметр
-  };
+  params: Promise<{
+    slug: string[];
+  }>;
 };
 
-const Page = async ({ params }: PageProps) => {
-  const currentPage = 1; // можна додати логіку для сторінки з URL, якщо потрібно
-  const text = '';       // пошуковий текст за замовчуванням
-  const tag = params.slug?.[0] as
-    | 'Todo'
-    | 'Work'
-    | 'Personal'
-    | 'Meeting'
-    | 'Shopping'
-    | undefined;
+export default async function Page({ params }: PageProps) {
+  const { slug } = await params;
+  const currentPage = 1;
+  const text = '';
+  const tag = slug[0] === 'all' ? undefined : (slug[0] as TagType);
 
   const queryClient = new QueryClient();
 
@@ -32,9 +28,11 @@ const Page = async ({ params }: PageProps) => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient initialPage={currentPage} initialText={text} tag={tag} />
+      <NotesClient
+        initialPage={currentPage}
+        initialText={text}
+        tag={tag}
+      />
     </HydrationBoundary>
   );
-};
-
-export default Page;
+}
